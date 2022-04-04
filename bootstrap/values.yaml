@@ -1,0 +1,5 @@
+project: main
+destination: https://kubernetes.default.svc
+source:
+  repoURL: https://github.com/stephenwolfe1/argocd-applications.git
+  targetRevision: setup

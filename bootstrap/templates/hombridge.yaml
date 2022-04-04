@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homebridge
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: homebridge
+    server: {{ .Values.destination }}
+  project: {{ .Values.project }}
+  source:
+    path: resources/homebridge
+    repoURL: {{ .Values.source.repoURL }}
+    targetRevision: {{ .Values.source.targetRevision }}
+    helm:
+      parameters:
+        - name: destination
+          value: {{ .Values.destination }}
+        - name: project
+          value: {{ .Values.project }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
