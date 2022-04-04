@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .Release.Name }}-app
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: {{ .Release.Name }}
+    server: {{ .Values.destination }}
+  project: {{ .Values.project }}
+  source:
+    chart: homebridge
+    repoURL: https://k8s-at-home.com/charts/
+    targetRevision: 2.1.0
+    helm:
+      values: |-
+        replicaCount: 1
+
+        image:
+          repository: oznu/homebridge
+          tag: latest
+          pullPolicy: Always
+
+        imagePullSecrets: []
+        nameOverride: {{ .Release.Name }}
+        fullnameOverride: {{ .Release.Name }}
+
+        env:
+          HOMEBRIDGE_CONFIG_UI: 1
+          HOMEBRIDGE_CONFIG_UI_PORT: 8080
+          TZ: America/Los_Angeles
+          PGID: 1000
+          PUID: 1000
+
+        service:
+          port:
+            port: {{ .Values.port }}
+
+        hostNetwork: true
+
+        ingress:
+          enabled: false
+          hosts:
+            - {{ .Values.hostname }}
+
+        persistence:
+          config:
+            enabled: true
+            storageClass: local-path
+            accessMode: ReadWriteOnce
+            size: 2Gi
+            skipuninstall: true
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

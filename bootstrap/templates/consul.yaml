@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: consul
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: consul
+    server: {{ .Values.destination }}
+  project: {{ .Values.project }}
+  source:
+    chart: consul
+    repoURL: https://helm.releases.hashicorp.com
+    targetRevision: 0.31.1
+    helm:
+      values: |-
+        global:
+          enabled: true
+          name: consul
+          datacenter: vault
+          image: "consul:1.9.5"
+          imageK8S: hashicorp/consul-k8s:0.25.0
+          gossip_encryption:
+            secret_name: consul-gossip-encryption-key
+            secret_key: key
+
+        server:
+          storage: 1Gi
+
+        ui:
+          ingress:
+            enabled: true
+            annotations: |
+              'cert-manager.io/cluster-issuer': letsencrypt-production
+            hosts:
+              - host: consul.swolfe.io
+                paths:
+                  - /
+            tls:
+              - hosts:
+                - consul.swolfe.io
+                secretName: consul.swolfe.io-tls
+
+        client:
+          enabled: false
+
+        dns:
+          enabled: false
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

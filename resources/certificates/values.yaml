@@ -1,0 +1,5 @@
+email: stephenwolfe1@gmail.com
+
+certificate:
+  name: star-swolfe-io
+  dnsNames: "*.swolfe.io"

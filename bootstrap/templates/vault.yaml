@@ -1,0 +1,80 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-4"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: vault
+    server: {{ .Values.destination }}
+  project: {{ .Values.project }}
+  source:
+    chart: vault
+    repoURL: https://helm.releases.hashicorp.com
+    targetRevision: 0.19.0
+    helm:
+      values: |-
+        global:
+          enabled: true
+
+        injector:
+          enabled: false
+
+        server:
+          enabled: true
+          image:
+            repository: "vault"
+            tag: "1.7.0"
+            pullPolicy: Always
+
+          dataStorage:
+            size: 1Gi
+
+          ingress:
+            enabled: true
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt-production
+            hosts:
+              - host: vault.swolfe.io
+                paths: []
+            tls:
+              - secretName: vault.swolfe.io-tls
+                hosts:
+                - vault.swolfe.io
+            
+
+          authDelegator:
+            enabled: false
+
+          ha:
+            enabled: true
+            replicas: 3
+
+            apiAddr: null
+
+            config: |
+              ui = true
+              max_lease_ttl = "12h"
+              default_lease_ttl = "12h"
+
+              listener "tcp" {
+                tls_disable = 1
+                address = "[::]:8200"
+                cluster_address = "[::]:8201"
+              }
+              storage "consul" {
+                path = "vault"
+                address = "consul-server.consul:8500"
+              }
+
+              service_registration "kubernetes" {}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
