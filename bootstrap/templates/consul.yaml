@@ -15,20 +15,21 @@ spec:
   source:
     chart: consul
     repoURL: https://helm.releases.hashicorp.com
-    targetRevision: 0.31.1
+    targetRevision: 1.2.1
     helm:
       values: |-
         global:
+          enablePodSecurityPolicies: false
           enabled: true
           name: consul
           datacenter: vault
-          image: "consul:1.9.5"
-          imageK8S: hashicorp/consul-k8s:0.25.0
           gossip_encryption:
             secret_name: consul-gossip-encryption-key
             secret_key: key
 
         server:
+          disruptionBudget:
+            enabled: false
           storage: 1Gi
 
         ui:
