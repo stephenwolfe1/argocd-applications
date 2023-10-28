@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: home-assistant
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: home-assistant
+    server: {{ .Values.destination }}
+  project: {{ .Values.project }}
+  source:
+    path: resources/home-assistant
+    repoURL: {{ .Values.source.repoURL }}
+    targetRevision: "home-assistant" ## {{ .Values.source.targetRevision }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
