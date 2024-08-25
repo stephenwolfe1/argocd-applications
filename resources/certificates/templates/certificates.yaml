@@ -1,0 +1,15 @@
+{{- range $k, $v := .Values.certificates }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $v.name }}
+  namespace: cert-manager
+spec:
+  secretName: {{ $v.name }}
+  issuerRef:
+    name: {{ default "letsencrypt-staging" $v.issuer }}
+    kind: ClusterIssuer
+  dnsNames:
+  - {{ $v.dnsNames | quote }}
+{{- end }}

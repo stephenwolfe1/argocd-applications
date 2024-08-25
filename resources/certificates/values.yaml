@@ -1,5 +1,8 @@
 email: stephenwolfe1@gmail.com
 
-certificate:
-  name: star-swolfe-io
-  dnsNames: "*.swolfe.io"
+certificates:
+  - name: star-swolfe-io
+    dnsNames: "*.swolfe.io"
+  - name: unifi-swolfe-io
+    dnsNames: "unifi.swolfe.io"
+    issuer: letsencrypt-production
