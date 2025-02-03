@@ -4,7 +4,7 @@ image:
   repository: homeassistant/home-assistant
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "2023.10"
+  tag: "2024.12"
 
 serviceAccount:
   # Specifies whether a service account should be created
