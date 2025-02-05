@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ring-mqtt
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: home-assistant
+    server: {{ .Values.destination }}
+  project: {{ .Values.project }}
+  source:
+    path: resources/ring-mqtt
+    repoURL: {{ .Values.source.repoURL }}
+    targetRevision: "home-assistant" # {{ .Values.source.targetRevision }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
