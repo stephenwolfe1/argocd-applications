@@ -13,7 +13,7 @@ spec:
   source:
     path: resources/home-assistant
     repoURL: {{ .Values.source.repoURL }}
-    targetRevision: "home-assistant" ## {{ .Values.source.targetRevision }}
+    targetRevision: {{ .Values.source.targetRevision }}
   syncPolicy:
     automated:
       prune: true
