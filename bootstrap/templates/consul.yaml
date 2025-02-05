@@ -51,6 +51,10 @@ spec:
 
         dns:
           enabled: false
+
+        connectInject:
+          enabled: false
+
   syncPolicy:
     automated:
       prune: true
