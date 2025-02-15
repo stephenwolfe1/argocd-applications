@@ -17,7 +17,8 @@ spec:
     helm:
       values: |-
         replicaCount: 1
-
+        strategy:
+          type: Recreate
         image:
           repository: oznu/homebridge
           tag: latest
