@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: mosquitto
+    app.kubernetes.io/name: mosquitto
+    argocd.argoproj.io/instance: mosquitto
+  name: mosquitto-base-config
+  namespace: home-assistant
+data:
+  mosquitto.conf: |
+    listener 1883
+    persistence true
+    persistence_location /mosquitto/data
+    autosave_interval 1800
+    password_file /mosquitto/config/password_file
