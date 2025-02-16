@@ -13,10 +13,7 @@ spec:
     server: {{ .Values.destination }}
   project: {{ .Values.project }}
   source:
-    path: base
-    repoURL: https://github.com/abalage/mosquitto-mqtt-k8s.git
-    targetRevision: main
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
+    path: resources/mosquitto-mqtt
+    repoURL: {{ .Values.source.repoURL }}
+    targetRevision: {{ .Values.source.targetRevision }}
+  syncPolicy: {}
