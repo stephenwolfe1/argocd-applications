@@ -46,25 +46,7 @@ spec:
             - secretName: minio-ui.swolfe.io-tls
               hosts:
                 - minio-ui.swolfe.io
-        # users:
-        #   - accessKey: console
-        #     secretKey: console123
-        #     policy: consoleAdmin
-        # svcaccts:
-        #   - accessKey: externalSecret
-        #     existingSecret: unifi
-        #     existingSecretKey: secretKey
-        #     user: console
-        #     policy:
-        #       statements:
-        #         - resources:
-        #             - 'arn:aws:s3:::example*/*'
-        #           actions:
-        #             - "s3:AbortMultipartUpload"
-        #             - "s3:GetObject"
-        #             - "s3:DeleteObject"
-        #             - "s3:PutObject"
-        #             - "s3:ListMultipartUploadParts"
+        existingSecret: minio-creds
         buckets:
           - name: unifi-ssl
             policy: none
