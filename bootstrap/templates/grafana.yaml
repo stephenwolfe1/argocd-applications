@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+  annotations:
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: grafana
+    server: https://kubernetes.default.svc
+  project: main
+  source:
+    chart: grafana
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: 9.2.2
+    helm:
+      values: |-
+        initChownData:
+          enabled: true
+        persistence:
+          enabled: true
+        ingress:
+          enabled: true
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-production
+          hosts:
+            - grafana.swolfe.io
+          tls:
+          - hosts:
+              - grafana.swolfe.io
+            secretName: grafana-tls
+        grafana.ini:
+          server:
+            root_url: https://grafana.swolfe.io
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+
+  ignoreDifferences:
+    - kind: Secret
+      name: grafana
+      jsonPointers:
+        - /spec/data

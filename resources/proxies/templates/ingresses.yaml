@@ -1,0 +1,32 @@
+{{- range $proxy := .Values.proxies }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "proxies.fullname" $ }}-{{ $proxy.name }}
+  labels:
+    {{- include "proxies.labels" $ | nindent 4 }}
+  {{- with $.Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with $.Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  tls:
+    - hosts:
+        - "{{ $proxy.name }}.swolfe.io"
+      secretName: "{{ $proxy.name }}.swolfe.io-tls"
+  rules:
+    - host: "{{ $proxy.name }}.swolfe.io"
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ include "proxies.fullname" $ }}-{{ $proxy.name }}
+                port:
+                  number: {{ $proxy.port }}
+{{- end }}
