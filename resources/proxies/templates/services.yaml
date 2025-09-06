@@ -1,0 +1,16 @@
+{{- range $proxy := .Values.proxies }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "proxies.fullname" $ }}-{{ $proxy.name }}
+  labels:
+    {{- include "proxies.labels" $ | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: {{ $proxy.port }}
+      protocol: TCP
+      targetPort: {{ $proxy.port }}
+{{- end }}

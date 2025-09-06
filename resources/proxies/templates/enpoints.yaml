@@ -1,0 +1,12 @@
+{{- range $proxy := .Values.proxies }}
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: {{ include "proxies.fullname" $ }}-{{ $proxy.name }}
+subsets:
+  - addresses:
+      - ip: {{ $proxy.ip }}
+    ports:
+      - port: {{ $proxy.port }}
+{{- end }}
