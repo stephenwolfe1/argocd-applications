@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: unifi-ssl
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: cert-manager
+    server: {{ .Values.destination }}
+  project: {{ .Values.project }}
+  source:
+    path: resources/unifi-ssl
+    repoURL: {{ .Values.source.repoURL }}
+    targetRevision: {{ .Values.source.targetRevision }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
