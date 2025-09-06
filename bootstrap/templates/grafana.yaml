@@ -17,8 +17,6 @@ spec:
     targetRevision: 9.2.2
     helm:
       values: |-
-        initChownData:
-          enabled: true
         persistence:
           enabled: true
         ingress:
