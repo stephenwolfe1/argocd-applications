@@ -6,3 +6,6 @@ certificates:
   - name: unifi-swolfe-io
     dnsNames: "unifi.swolfe.io"
     issuer: letsencrypt-production
+  - name: nvr-swolfe-io
+    dnsNames: "nvr.swolfe.io"
+    issuer: letsencrypt-production
