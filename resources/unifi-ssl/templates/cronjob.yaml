@@ -35,7 +35,7 @@ spec:
               - -c
               - |
                 mc alias set minio $MINIO_HOST $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
-                mc cp /data/ssl/tls.crt /data/ssl/tls.key minio/unifi-ssl/
+                mc cp /data/ssl/tls.crt /data/ssl/tls.key minio/unifi-ssl/{{ .Values.secret.ssl.name }}/
             envFrom:
               - secretRef:
                   name: {{ .Values.secret.env.name }}
@@ -43,8 +43,12 @@ spec:
               - name: {{ include "unifi-ssl.fullname" . }}
                 readOnly: true
                 mountPath: "/data/ssl"
+              - name: mc-tmp
+                mountPath: /.mc
           restartPolicy: {{ default "OnFailure" .Values.restartPolicy }}
           volumes:
             - name: {{ include "unifi-ssl.fullname" . }}
               secret:
                 secretName: {{ .Values.secret.ssl.name }}
+            - name: mc-tmp
+              emptyDir: {}
