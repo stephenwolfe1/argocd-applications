@@ -5,7 +5,7 @@ ingress:
 
 proxies:
   - name: ha
-    ip: 192.168.107.10
+    ip: 192.168.2.10
     port: 8123
   - name: swnas01
     ip: 192.168.107.3
