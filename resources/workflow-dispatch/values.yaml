@@ -1,0 +1,73 @@
+# Tuesday 09:05 ET. Unlike GitHub's own scheduler this actually fires on time -
+# GitHub documents that it "does not guarantee scheduled workflows will start at
+# the scheduled time", and in practice a weekly recap ran 4.5h late one week and
+# was dropped entirely the next.
+#
+# Cron here is UTC (13:05 = 09:05 EDT, 14:05 = 09:05 EST). Kubernetes CronJob
+# supports a timeZone field on 1.27+, set it below to avoid the DST shift.
+schedule: "5 13 * * 2"
+timeZone: America/New_York   # set to "" to use UTC and manage DST by hand
+
+concurrencyPolicy: Forbid
+restartPolicy: OnFailure
+suspend: false
+
+successfulJobsHistoryLimit: 3
+failedJobsHistoryLimit: 3
+
+# Guard against a hung curl holding a job open.
+activeDeadlineSeconds: 300
+backoffLimit: 2
+
+github:
+  repository: stephenwolfe1/fantasy-weekly-email
+  workflow: weekly-recap.yml
+  # Branch the workflow is dispatched against. Must be the branch holding the
+  # workflow file - `develop` here, not `main`.
+  ref: develop
+  apiUrl: https://api.github.com
+  # Secret holding GITHUB_TOKEN: a fine-grained PAT scoped to this repo with
+  # Actions: read and write. Create with:
+  #   kubectl create secret generic github-dispatch \
+  #     --from-literal=GITHUB_TOKEN=github_pat_... -n fantasy
+  secret:
+    name: github-dispatch
+    key: GITHUB_TOKEN
+
+# One dispatch per league. The workflow takes `league` as an input, so each
+# entry becomes its own run - which is also how a manual dispatch behaves.
+leagues:
+  - sunday-funday
+  - league-of-long-journeys
+
+image:
+  repository: curlimages/curl
+  tag: "8.11.1"
+  pullPolicy: IfNotPresent
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  fsGroup: 65534
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 64Mi
+
+nameOverride: ""
+fullnameOverride: ""
+podAnnotations: {}
+podLabels: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

@@ -1,0 +1,94 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "workflow-dispatch.fullname" . }}
+  labels:
+    {{- include "workflow-dispatch.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  {{- with .Values.timeZone }}
+  timeZone: {{ . | quote }}
+  {{- end }}
+  concurrencyPolicy: {{ default "Forbid" .Values.concurrencyPolicy }}
+  suspend: {{ .Values.suspend }}
+  successfulJobsHistoryLimit: {{ .Values.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: {{ .Values.backoffLimit }}
+      activeDeadlineSeconds: {{ .Values.activeDeadlineSeconds }}
+      template:
+        metadata:
+          {{- with .Values.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          labels:
+            {{- include "workflow-dispatch.selectorLabels" . | nindent 12 }}
+            {{- with .Values.podLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          restartPolicy: {{ default "OnFailure" .Values.restartPolicy }}
+          {{- with .Values.podSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: dispatch
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              {{- with .Values.securityContext }}
+              securityContext:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              {{- with .Values.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              env:
+                - name: GITHUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.github.secret.name }}
+                      key: {{ .Values.github.secret.key }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  fail=0
+                  for league in {{ range .Values.leagues }}{{ . | quote }} {{ end }}; do
+                    echo "==> dispatching ${league}"
+                    # --fail-with-body so a 4xx is an error AND we see why.
+                    # A 204 is success and returns no body.
+                    if curl --silent --show-error --fail-with-body \
+                      --retry 3 --retry-delay 10 --retry-connrefused \
+                      --max-time 30 \
+                      -X POST \
+                      -H "Accept: application/vnd.github+json" \
+                      -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+                      -H "X-GitHub-Api-Version: 2022-11-28" \
+                      "{{ .Values.github.apiUrl }}/repos/{{ .Values.github.repository }}/actions/workflows/{{ .Values.github.workflow }}/dispatches" \
+                      -d "{\"ref\":\"{{ .Values.github.ref }}\",\"inputs\":{\"league\":\"${league}\"}}"; then
+                      echo "    dispatched"
+                    else
+                      echo "    FAILED for ${league}"
+                      fail=1
+                    fi
+                  done
+                  # Exit non-zero if any league failed, so the Job is marked
+                  # failed and shows up rather than silently doing nothing.
+                  exit "${fail}"
