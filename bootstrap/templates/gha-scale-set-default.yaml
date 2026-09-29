@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arc-scale-set-default
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: arc-runners
+    server: {{ .Values.destination }}
+  project: {{ .Values.project }}
+  source:
+    chart: gha-runner-scale-set
+    repoURL: ghcr.io/actions/actions-runner-controller-charts
+    targetRevision: 0.14.2
+    helm:
+      valuesObject:
+        containerMode:
+          type: dind
+        controllerServiceAccount:
+          name: arc-scale-set-controller-gha-rs-controller
+          namespace: arc-systems
+        githubConfigSecret: github-credentials
+        githubConfigUrl: https://github.com/stephenwolfe1/fantasy-weekly-email
+        maxRunners: 5
+        template:
+          spec:
+            containers:
+              - name: runner
+                image: ghcr.io/actions/actions-runner:latest
+                command: ["/home/runner/run.sh"]
+                resources:
+                  requests:
+                    cpu: "250m"
+                    memory: "256Mi"
+                  limits:
+                    cpu: "1"
+                    memory: "2Gi"
+            securityContext:
+              fsGroup: 1001
+              fsGroupChangePolicy: OnRootMismatch
+  syncPolicy:
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true
