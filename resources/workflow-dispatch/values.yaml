@@ -6,7 +6,7 @@
 # Cron here is UTC (13:05 = 09:05 EDT, 14:05 = 09:05 EST). Kubernetes CronJob
 # supports a timeZone field on 1.27+, set it below to avoid the DST shift.
 schedule: "5 13 * * 2"
-timeZone: America/New_York   # set to "" to use UTC and manage DST by hand
+timeZone: ""   # set to "" to use UTC and manage DST by hand
 
 concurrencyPolicy: Forbid
 restartPolicy: OnFailure
